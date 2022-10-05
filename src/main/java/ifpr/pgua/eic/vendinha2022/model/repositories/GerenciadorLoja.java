@@ -90,7 +90,18 @@ public class GerenciadorLoja {
 
     public Result atualizarCliente(String cpf, String novoEmail, String novoTelefone){
         Optional<Cliente> busca = clientes.stream().filter((cli)->cli.getCpf().equals(cpf)).findFirst();
-        
+        try{
+            String url = Env.get("DB_URL");
+            String senha = Env.get("DB_PASSWORD");
+            String usuario = Env.get("DB_USER");
+            Connection con = DriverManager.getConnection(url,usuario,senha);
+               
+            PreparedStatement pstm = con.prepareStatement("UPDATE clientesoo set("email","telefone") where id like ?");
+
+        }catch(SQLException e){
+            System.out.println(e.getMessage());
+            return null;
+        }
         if(busca.isPresent()){
             Cliente cliente = busca.get();
             cliente.setEmail(novoEmail);
