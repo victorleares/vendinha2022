@@ -27,7 +27,7 @@ public class App extends BaseAppNavigator {
         // TODO Auto-generated method stub
         super.init();
         gerenciador = new GerenciadorLoja();
-        gerenciador.geraFakes();
+        //gerenciador.geraFakes();
         //gerenciador.carregar();
     }
 

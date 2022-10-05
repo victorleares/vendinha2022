@@ -17,6 +17,9 @@ import java.util.List;
 import java.util.Optional;
 
 import com.google.gson.Gson;
+import com.mysql.cj.jdbc.Driver;
+import com.mysql.cj.jdbc.JdbcConnection;
+import com.mysql.cj.x.protobuf.MysqlxCrud.Insert;
 import com.mysql.cj.xdevapi.PreparableStatement;
 
 import ifpr.pgua.eic.vendinha2022.model.entities.Cliente;
@@ -25,6 +28,7 @@ import ifpr.pgua.eic.vendinha2022.model.entities.Venda;
 import ifpr.pgua.eic.vendinha2022.model.results.FailResult;
 import ifpr.pgua.eic.vendinha2022.model.results.Result;
 import ifpr.pgua.eic.vendinha2022.model.results.SuccessResult;
+import ifpr.pgua.eic.vendinha2022.utils.Env;
 
 public class GerenciadorLoja {
     
@@ -55,6 +59,28 @@ public class GerenciadorLoja {
         if(busca.isPresent()){
             return Result.fail("Cliente já cadastrado!");
         }
+        try{
+            String url = Env.get("DB_URL");
+            String senha = Env.get("DB_PASSWORD");
+            String usuario = Env.get("DB_USER");
+            Connection con = DriverManager.getConnection(url,usuario,senha);
+
+            PreparedStatement pstm = con.prepareStatement("INSERT INTO clientesoo(nome,cpf,email,telefone) VALUES (?,?,?,?)");
+            pstm.setString(1,nome);
+            pstm.setString(2,cpf);
+            pstm.setString(3,email);
+            pstm.setString(4,telefone);
+
+            pstm.executeUpdate();
+            
+            pstm.close();
+            con.close();
+
+        }catch(SQLException e){
+            System.out.println(e.getMessage());
+            return Result.fail(e.getMessage());
+        }
+
 
         Cliente cliente = new Cliente(nome,cpf,email,telefone);
         clientes.add(cliente);
@@ -76,6 +102,33 @@ public class GerenciadorLoja {
     }
 
     public List<Cliente> getClientes(){
+        clientes.clear();
+        try{
+            String url = Env.get("DB_URL");
+            String senha = Env.get("DB_PASSWORD");
+            String usuario = Env.get("DB_USER");
+            Connection con = DriverManager.getConnection(url,usuario,senha);
+
+            PreparedStatement pstm = con.prepareStatement("SELECT * FROM clientesoo");
+
+            ResultSet rs = pstm.executeQuery();
+
+            while(rs.next()){
+                int id = rs.getInt("id");
+                String nome = rs.getString("nome");
+                String email = rs.getString("email");
+                String telefone = rs.getString("telefone");
+                String cpf = rs.getString("cpf");
+
+                Cliente cliente = new Cliente(id, nome, cpf, email, telefone);
+
+                clientes.add(cliente);
+            }
+
+        }catch(SQLException e){
+            System.out.println(e.getMessage());
+            return null;
+        }
         return Collections.unmodifiableList(clientes);
     }
 
